@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>字母打字大冒险</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #EFF3FF;
+    --card: #FFFFFF;
+    --ink: #2B2D42;
+    --ink-soft: #6B6E8C;
+    --line: #E3E7F7;
+
+    --pinky-l: #FF6B6B;
+    --ring-l:  #FFA94D;
+    --mid-l:   #F5C93D;
+    --index-l: #51CF66;
+    --index-r: #339AF0;
+    --mid-r:   #9775FA;
+    --ring-r:  #F783AC;
+    --pinky-r: #38D9C9;
+
+    --pinky-l-dk: #B23A3A;
+    --ring-l-dk:  #B36A1F;
+    --mid-l-dk:   #A0821A;
+    --index-l-dk: #237A34;
+    --index-r-dk: #1B5F94;
+    --mid-r-dk:   #5A3EA8;
+    --ring-r-dk:  #A34567;
+    --pinky-r-dk: #1E8C80;
+
+    --green: #38C172;
+    --red: #FF5C5C;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: var(--bg);
+    font-family:'Nunito', sans-serif;
+    color: var(--ink);
+    padding: 20px 14px 60px;
+  }
+  h1,h2,h3{ font-family:'Baloo 2', sans-serif; margin:0; }
+  .wrap{ max-width: 980px; margin: 0 auto; }
+
+  .hero{
+    text-align:center;
+    margin-bottom: 22px;
+  }
+  .hero h1{
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .hero p{
+    color: var(--ink-soft);
+    font-size: 16px;
+    margin-top: 6px;
+  }
+  .hero .rainbow{
+    display:flex; justify-content:center; gap:6px; margin-top:14px;
+  }
+  .hero .rainbow span{
+    width:26px; height:10px; border-radius:6px;
+  }
+
+  .tabs{
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+    margin-bottom: 22px;
+  }
+  .tab-btn{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    background: var(--card);
+    border: 2px solid var(--line);
+    color: var(--ink-soft);
+    padding: 10px 18px;
+    border-radius: 999px;
+    cursor:pointer;
+    transition: transform .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .tab-btn:hover{ transform: translateY(-2px); }
+  .tab-btn.active{
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+
+  .panel{
+    background: var(--card);
+    border-radius: 24px;
+    padding: 26px clamp(14px, 4vw, 36px) 32px;
+    box-shadow: 0 10px 30px rgba(43,45,66,0.06);
+    display:none;
+  }
+  .panel.active{ display:block; }
+
+  .panel-title{
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .panel-sub{
+    color: var(--ink-soft);
+    font-size: 15px;
+    margin-bottom: 20px;
+    line-height:1.6;
+  }
+
+  /* ---- legend ---- */
+  .legend{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  @media (max-width:640px){ .legend{ grid-template-columns: repeat(2,1fr);} }
+  .legend-item{
+    display:flex; align-items:center; gap:8px;
+    background:#F7F8FD;
+    border-radius:12px;
+    padding:8px 10px;
+    font-size:12.5px;
+    font-weight:700;
+  }
+  .legend-dot{ width:16px; height:16px; border-radius:50%; flex:none; }
+
+  /* ---- hands ---- */
+  .hands-row{
+    display:flex; justify-content:center; align-items:flex-end;
+    gap: 60px;
+    margin: 10px 0 26px;
+  }
+  .hand{
+    display:flex; align-items:flex-end;
+    gap:6px;
+  }
+  .hand.right{ flex-direction:row-reverse; }
+  .finger{
+    width: 22px;
+    border-radius: 12px;
+    background: #E4E7F5;
+    transition: all .25s ease;
+    position:relative;
+  }
+  .finger.thumb{ height:44px; align-self:flex-end; margin-bottom:6px; border-radius:12px; }
+  .finger.index{ height:78px; }
+  .finger.middle{ height:92px; }
+  .finger.ring{ height:80px; }
+  .finger.pinky{ height:60px; }
+  .palm{
+    width: 116px; height:70px;
+    background:#DEE2F2;
+    border-radius: 18px 18px 30px 30px;
+    margin: 0 2px;
+  }
+  .finger.on{
+    transform: translateY(-8px) scale(1.08);
+  }
+  .hand-label{
+    text-align:center;
+    font-size:12px;
+    font-weight:800;
+    color: var(--ink-soft);
+    margin-top:8px;
+  }
+  .hand-col{ display:flex; flex-direction:column; align-items:center; }
+
+  /* ---- keyboard ---- */
+  .keyboard{
+    max-width: 620px;
+    margin: 0 auto 20px;
+  }
+  .krow{
+    display:flex; justify-content:center; gap:6px; margin-bottom:6px;
+  }
+  .krow:nth-child(2){ padding-left: 20px; }
+  .krow:nth-child(3){ padding-left: 40px; }
+  .key{
+    width: clamp(30px, 8vw, 48px);
+    height: clamp(30px, 8vw, 48px);
+    border-radius: 10px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size: 16px;
+    color: #fff;
+    opacity:.55;
+    transition: all .2s ease;
+    cursor:default;
+    user-select:none;
+  }
+  .key.on{
+    opacity:1;
+    transform: scale(1.15);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+  }
+  .key.done{ opacity: .3; }
+
+  /* ---- section1 learn card ---- */
+  .learn-stage{
+    display:flex; flex-wrap:wrap; gap:24px; align-items:center; justify-content:center;
+    margin-bottom: 18px;
+  }
+  .letter-card{
+    width: 150px; height:150px;
+    border-radius: 30px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2', sans-serif;
+    font-size: 78px;
+    font-weight:800;
+    color:#fff;
+    box-shadow: 0 12px 26px rgba(0,0,0,0.12);
+  }
+  .learn-info{ min-width:220px; }
+  .learn-info .finger-name{
+    font-family:'Baloo 2', sans-serif;
+    font-size: 24px;
+    font-weight:800;
+    margin-bottom:6px;
+  }
+  .learn-info .hint{ color: var(--ink-soft); font-size:14px; }
+
+  .controls-row{
+    display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+    margin-top: 14px;
+  }
+  button.btn{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    border:none;
+    border-radius: 999px;
+    padding: 10px 20px;
+    cursor:pointer;
+    background: var(--ink);
+    color:#fff;
+    transition: transform .15s ease, opacity .15s ease;
+  }
+  button.btn:hover{ transform: translateY(-2px); }
+  button.btn.ghost{
+    background: #F7F8FD;
+    color: var(--ink);
+    border: 2px solid var(--line);
+  }
+  button.btn:disabled{ opacity:.4; cursor:not-allowed; transform:none; }
+
+  /* ---- reference grid section1 ---- */
+  .ref-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px,1fr));
+    gap:8px;
+    max-width: 620px;
+    margin: 20px auto 0;
+  }
+  .ref-cell{
+    aspect-ratio:1;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    color:#fff;
+    font-size:15px;
+  }
+
+  /* ---- challenge sections ---- */
+  .seq-strip{
+    display:flex; flex-wrap:wrap; gap:6px; justify-content:center;
+    margin: 16px 0 20px;
+  }
+  .seq-letter{
+    width:32px; height:38px;
+    border-radius:8px;
+    background:#F0F2FA;
+    color: var(--ink-soft);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:16px;
+    transition: all .15s ease;
+  }
+  .seq-letter.current{
+    background: var(--ink);
+    color:#fff;
+    transform: scale(1.18);
+  }
+  .seq-letter.done{
+    background: var(--green);
+    color:#fff;
+  }
+  .seq-letter.shake{
+    animation: shake .3s;
+  }
+  @keyframes shake{
+    0%,100%{ transform: translateX(0); }
+    25%{ transform: translateX(-4px); }
+    75%{ transform: translateX(4px); }
+  }
+
+  .timer-wrap{
+    max-width: 420px; margin: 0 auto 18px;
+  }
+  .timer-bar-bg{
+    background:#F0F2FA; border-radius: 999px; height:16px; overflow:hidden;
+  }
+  .timer-bar{
+    height:100%; border-radius:999px; background: var(--green);
+    width:100%; transition: width .1s linear, background .3s ease;
+  }
+  .timer-num{
+    text-align:center; font-family:'Baloo 2', sans-serif; font-weight:800;
+    font-size:15px; margin-top:6px; color: var(--ink-soft);
+  }
+
+  .result-msg{
+    text-align:center;
+    font-family:'Baloo 2', sans-serif;
+    font-size: 22px;
+    font-weight:800;
+    margin: 10px 0;
+    min-height: 30px;
+  }
+  .result-msg.ok{ color: var(--green); }
+  .result-msg.fail{ color: var(--red); }
+
+  .instruction-box{
+    background:#F7F8FD;
+    border-radius:14px;
+    padding: 12px 16px;
+    font-size:14px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    text-align:center;
+  }
+
+  /* ---- section 4 ---- */
+  .progress-bar-bg{
+    background:#F0F2FA; border-radius:999px; height:10px; margin-bottom:8px;
+  }
+  .progress-bar{
+    height:100%; border-radius:999px; background: var(--index-r);
+    width:0%; transition: width .3s ease;
+  }
+  .progress-label{
+    text-align:center; font-size:13px; color:var(--ink-soft); font-weight:700; margin-bottom:18px;
+  }
+  .sentence-box{
+    font-family:'Baloo 2', sans-serif;
+    font-size: clamp(20px, 4vw, 28px);
+    font-weight:700;
+    text-align:center;
+    line-height:1.6;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+  .sentence-box span{ border-bottom:3px solid transparent; }
+  .sentence-box span.correct{ color: var(--green); border-color: var(--green); }
+  .sentence-box span.wrong{ color: var(--red); border-color: var(--red); background:#FFECEC; }
+  .sentence-box span.pending{ color:#C7CADC; }
+
+  .typebox{
+    display:block;
+    width:100%;
+    max-width: 560px;
+    margin: 0 auto 18px;
+    font-family:'Nunito', sans-serif;
+    font-size: 18px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 2px solid var(--line);
+    outline:none;
+    text-align:center;
+  }
+  .typebox:focus{ border-color: var(--index-r); }
+
+  .stats-row{
+    display:flex; justify-content:center; gap: 26px; margin-bottom: 18px;
+    flex-wrap:wrap;
+  }
+  .stat{
+    text-align:center;
+  }
+  .stat .num{
+    font-family:'Baloo 2', sans-serif; font-size:24px; font-weight:800;
+  }
+  .stat .label{ font-size:12px; color: var(--ink-soft); font-weight:700; }
+
+  .footer-note{
+    text-align:center; color: var(--ink-soft); font-size:12.5px; margin-top: 26px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1>字母打字大冒险</h1>
+    <p>先认识手指朋友，再挑战 A 到 Z，最后练习真正的句子！</p>
+    <div class="rainbow">
+      <span style="background:var(--pinky-l)"></span>
+      <span style="background:var(--ring-l)"></span>
+      <span style="background:var(--mid-l)"></span>
+      <span style="background:var(--index-l)"></span>
+      <span style="background:var(--index-r)"></span>
+      <span style="background:var(--mid-r)"></span>
+      <span style="background:var(--ring-r)"></span>
+      <span style="background:var(--pinky-r)"></span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="1">1. 认识手指</button>
+    <button class="tab-btn" data-tab="2">2. 限时挑战 A-Z</button>
+    <button class="tab-btn" data-tab="3">3. 大小写混合</button>
+    <button class="tab-btn" data-tab="4">4. 常用短句练习</button>
+  </div>
+
+  <!-- ============ PANEL 1 ============ -->
+  <div class="panel active" id="panel1">
+    <div class="panel-title">先来认识你的 8 个手指朋友</div>
+    <div class="panel-sub">每个字母都有一个专属的手指负责按！颜色一样，就是同一个手指管的键。点击下面的按钮，一个一个字母学习吧。</div>
+
+    <div class="legend" id="legend"></div>
+
+    <div class="hands-row">
+      <div class="hand-col">
+        <div class="hand left" id="handLeft"></div>
+        <div class="hand-label">左手</div>
+      </div>
+      <div class="hand-col">
+        <div class="hand right" id="handRight"></div>
+        <div class="hand-label">右手</div>
+      </div>
+    </div>
+
+    <div class="keyboard" id="keyboard1"></div>
+
+    <div class="learn-stage">
+      <div class="letter-card" id="learnLetterCard">A</div>
+      <div class="learn-info">
+        <div class="finger-name" id="learnFingerName">左手小指</div>
+        <div class="hint" id="learnHint">用左手小指轻轻按下 A 键</div>
+      </div>
+    </div>
+
+    <div class="controls-row">
+      <button class="btn ghost" id="prevLetterBtn">← 上一个</button>
+      <button class="btn" id="playBtn">▶ 自动播放</button>
+      <button class="btn ghost" id="nextLetterBtn">下一个 →</button>
+    </div>
+
+    <div class="ref-grid" id="refGrid"></div>
+  </div>
+
+  <!-- ============ PANEL 2 ============ -->
+  <div class="panel" id="panel2">
+    <div class="panel-title">限时挑战：按顺序打出 A 到 Z</div>
+    <div class="panel-sub">从 a 一直打到 z。第一次按键就会开始倒计时，20 秒内必须全部打完，超时就算失败，要重新开始哦！</div>
+
+    <div class="instruction-box">把手指放在键盘上，准备好了就开始打字吧！</div>
+
+    <div class="timer-wrap">
+      <div class="timer-bar-bg"><div class="timer-bar" id="timerBar2"></div></div>
+      <div class="timer-num" id="timerNum2">20.0 秒</div>
+    </div>
+
+    <div class="seq-strip" id="seq2"></div>
+
+    <div class="result-msg" id="result2"></div>
+
+    <div class="controls-row">
+      <button class="btn ghost" id="reset2Btn">重新开始</button>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 3 ============ -->
+  <div class="panel" id="panel3">
+    <div class="panel-title">大小写混合挑战</div>
+    <div class="panel-sub">还是 a 打到 z，但每个字母的大小写是随机的！看到大写字母，别忘了按住 Shift 键哦。20 秒内打完才算成功。</div>
+
+    <div class="instruction-box">大写字母 = 按住 Shift 再按键；小写字母 = 直接按键。</div>
+
+    <div class="timer-wrap">
+      <div class="timer-bar-bg"><div class="timer-bar" id="timerBar3"></div></div>
+      <div class="timer-num" id="timerNum3">20.0 秒</div>
+    </div>
+
+    <div class="seq-strip" id="seq3"></div>
+
+    <div class="result-msg" id="result3"></div>
+
+    <div class="controls-row">
+      <button class="btn ghost" id="reset3Btn">换一批 · 重新开始</button>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 4 ============ -->
+  <div class="panel" id="panel4">
+    <div class="panel-title">常用短句练习</div>
+    <div class="panel-sub">100 个美国学生常用的简单句子，打对一句就自动跳到下一句，练完整段句子的手感！</div>
+
+    <div class="progress-bar-bg"><div class="progress-bar" id="progressBar4"></div></div>
+    <div class="progress-label" id="progressLabel4">第 1 / 100 句</div>
+
+    <div class="sentence-box" id="sentenceBox4"></div>
+
+    <input type="text" class="typebox" id="typeInput4" placeholder="在这里开始打字…" autocomplete="off" autocapitalize="off" spellcheck="false">
+
+    <div class="stats-row">
+      <div class="stat"><div class="num" id="statDone4">0</div><div class="label">已完成</div></div>
+      <div class="stat"><div class="num" id="statAcc4">100%</div><div class="label">准确率</div></div>
+    </div>
+
+    <div class="controls-row">
+      <button class="btn ghost" id="prevSent4Btn">← 上一句</button>
+      <button class="btn ghost" id="skipSent4Btn">跳过这句</button>
+      <button class="btn ghost" id="restart4Btn">从头开始</button>
+    </div>
+  </div>
+
+  <div class="footer-note">小提示：打字时手指要放在 A S D F 和 J K L ; 这一排哦，这就是"家"，打完字要记得回家！</div>
+
+</div>
+
+<script>
+/* ============ finger map ============ */
+const FINGERS = [
+  { key:'pinky-l', label:'左手小指', color:'var(--pinky-l)', dark:'var(--pinky-l-dk)', hand:'left',  slot:'pinky' },
+  { key:'ring-l',  label:'左手无名指', color:'var(--ring-l)', dark:'var(--ring-l-dk)', hand:'left',  slot:'ring' },
+  { key:'mid-l',   label:'左手中指',  color:'var(--mid-l)',  dark:'var(--mid-l-dk)',  hand:'left',  slot:'middle' },
+  { key:'index-l', label:'左手食指',  color:'var(--index-l)',dark:'var(--index-l-dk)',hand:'left',  slot:'index' },
+  { key:'index-r', label:'右手食指',  color:'var(--index-r)',dark:'var(--index-r-dk)',hand:'right', slot:'index' },
+  { key:'mid-r',   label:'右手中指',  color:'var(--mid-r)',  dark:'var(--mid-r-dk)',  hand:'right', slot:'middle' },
+  { key:'ring-r',  label:'右手无名指', color:'var(--ring-r)', dark:'var(--ring-r-dk)', hand:'right', slot:'ring' },
+  { key:'pinky-r', label:'右手小指', color:'var(--pinky-r)', dark:'var(--pinky-r-dk)', hand:'right', slot:'pinky' },
+];
+const FINGER_BY_KEY = Object.fromEntries(FINGERS.map(f=>[f.key,f]));
+
+const LETTER_FINGER = {
+  q:'pinky-l', a:'pinky-l', z:'pinky-l',
+  w:'ring-l',  s:'ring-l',  x:'ring-l',
+  e:'mid-l',   d:'mid-l',   c:'mid-l',
+  r:'index-l', f:'index-l', v:'index-l', t:'index-l', g:'index-l', b:'index-l',
+  y:'index-r', h:'index-r', n:'index-r', u:'index-r', j:'index-r', m:'index-r',
+  i:'mid-r',   k:'mid-r',
+  o:'ring-r',  l:'ring-r',
+  p:'pinky-r'
+};
+
+const KB_ROWS = [ ['q','w','e','r','t','y','u','i','o','p'],
+                   ['a','s','d','f','g','h','j','k','l'],
+                   ['z','x','c','v','b','n','m'] ];
+
+function fingerOf(letter){ return FINGER_BY_KEY[LETTER_FINGER[letter.toLowerCase()]]; }
+
+/* ============ build legend ============ */
+const legendEl = document.getElementById('legend');
+FINGERS.forEach(f=>{
+  const d = document.createElement('div');
+  d.className='legend-item';
+  d.innerHTML = `<span class="legend-dot" style="background:${f.color}"></span>${f.label}`;
+  legendEl.appendChild(d);
+});
+
+/* ============ build keyboard (panel1) ============ */
+const kb1 = document.getElementById('keyboard1');
+const keyEls = {};
+KB_ROWS.forEach(row=>{
+  const r = document.createElement('div'); r.className='krow';
+  row.forEach(letter=>{
+    const f = fingerOf(letter);
+    const k = document.createElement('div');
+    k.className='key';
+    k.textContent = letter.toUpperCase();
+    k.style.background = f.color;
+    r.appendChild(k);
+    keyEls[letter]=k;
+  });
+  kb1.appendChild(r);
+});
+
+/* ============ build hands ============ */
+function buildHand(container, hand){
+  container.innerHTML='';
+  const order = hand==='left' ? ['pinky','ring','middle','index'] : ['index','middle','ring','pinky'];
+  const fingerDivs = {};
+  order.forEach(slot=>{
+    const f = FINGERS.find(x=>x.hand===hand && x.slot===slot);
+    const el = document.createElement('div');
+    el.className = 'finger '+slot;
+    el.style.background = '#E4E7F5';
+    el.dataset.fingerKey = f.key;
+    container.appendChild(el);
+    fingerDivs[f.key]=el;
+  });
+  const palm = document.createElement('div'); palm.className='palm';
+  if(hand==='left') container.appendChild(palm); else container.insertBefore(palm, container.firstChild);
+  const thumb = document.createElement('div'); thumb.className='finger thumb'; thumb.style.background='#E4E7F5';
+  if(hand==='left') container.appendChild(thumb); else container.insertBefore(thumb, container.firstChild);
+  return fingerDivs;
+}
+const leftFingerDivs = buildHand(document.getElementById('handLeft'),'left');
+const rightFingerDivs = buildHand(document.getElementById('handRight'),'right');
+const ALL_FINGER_DIVS = {...leftFingerDivs, ...rightFingerDivs};
+
+function highlightFinger(fingerKey){
+  Object.entries(ALL_FINGER_DIVS).forEach(([k,el])=>{
+    el.classList.toggle('on', k===fingerKey);
+    el.style.background = k===fingerKey ? FINGER_BY_KEY[k].color : '#E4E7F5';
+  });
+}
+
+/* ============ reference grid ============ */
+const refGrid = document.getElementById('refGrid');
+'abcdefghijklmnopqrstuvwxyz'.split('').forEach(letter=>{
+  const f = fingerOf(letter);
+  const c = document.createElement('div');
+  c.className='ref-cell';
+  c.style.background = f.color;
+  c.textContent = letter.toUpperCase();
+  c.title = f.label;
+  refGrid.appendChild(c);
+});
+
+/* ============ PANEL 1 logic: learn mode ============ */
+const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+let learnIdx = 0;
+let playTimer = null;
+
+function showLearn(idx){
+  learnIdx = ((idx % letters.length)+letters.length) % letters.length;
+  const letter = letters[learnIdx];
+  const f = fingerOf(letter);
+  document.getElementById('learnLetterCard').textContent = letter.toUpperCase();
+  document.getElementById('learnLetterCard').style.background = f.color;
+  document.getElementById('learnFingerName').textContent = f.label;
+  document.getElementById('learnFingerName').style.color = f.dark;
+  document.getElementById('learnHint').textContent = `用${f.label}轻轻按下 ${letter.toUpperCase()} 键`;
+  highlightFinger(f.key);
+  Object.entries(keyEls).forEach(([l,el])=> el.classList.toggle('on', l===letter));
+}
+showLearn(0);
+
+document.getElementById('nextLetterBtn').onclick = ()=> showLearn(learnIdx+1);
+document.getElementById('prevLetterBtn').onclick = ()=> showLearn(learnIdx-1);
+
+const playBtn = document.getElementById('playBtn');
+playBtn.onclick = ()=>{
+  if(playTimer){
+    clearInterval(playTimer); playTimer=null;
+    playBtn.textContent='▶ 自动播放';
+  } else {
+    playBtn.textContent='⏸ 暂停播放';
+    playTimer = setInterval(()=>{ showLearn(learnIdx+1); }, 1400);
+  }
+};
+
+/* ============ shared challenge engine (panel 2 & 3) ============ */
+function buildSeqStrip(container, sequence){
+  container.innerHTML='';
+  const spans = sequence.map(ch=>{
+    const s = document.createElement('div');
+    s.className='seq-letter';
+    s.textContent = ch;
+    container.appendChild(s);
+    return s;
+  });
+  return spans;
+}
+
+function makeChallenge(cfg){
+  // cfg: {seqContainer, timerBar, timerNum, resultEl, exactCase, buildSequence}
+  let sequence = cfg.buildSequence();
+  let spans = buildSeqStrip(cfg.seqContainer, sequence);
+  let idx = 0;
+  let started = false;
+  let timeLeft = 20;
+  let interval = null;
+  const TIME_LIMIT = 20;
+
+  function paintCurrent(){
+    spans.forEach((s,i)=>{
+      s.classList.remove('current','done');
+      if(i<idx) s.classList.add('done');
+      else if(i===idx) s.classList.add('current');
+    });
+  }
+  paintCurrent();
+
+  function updateTimerUI(){
+    const pct = Math.max(0, timeLeft/TIME_LIMIT*100);
+    cfg.timerBar.style.width = pct+'%';
+    cfg.timerBar.style.background = timeLeft>7 ? 'var(--green)' : 'var(--red)';
+    cfg.timerNum.textContent = timeLeft.toFixed(1)+' 秒';
+  }
+  updateTimerUI();
+
+  function reset(regenerate){
+    if(interval) clearInterval(interval);
+    interval=null; started=false; idx=0; timeLeft=TIME_LIMIT;
+    if(regenerate){ sequence = cfg.buildSequence(); }
+    spans = buildSeqStrip(cfg.seqContainer, sequence);
+    paintCurrent();
+    updateTimerUI();
+    cfg.resultEl.textContent='';
+    cfg.resultEl.className='result-msg';
+    highlightFinger(null);
+    Object.values(keyEls).forEach(k=>k.classList.remove('on'));
+  }
+
+  function startTimer(){
+    started = true;
+    interval = setInterval(()=>{
+      timeLeft -= 0.1;
+      if(timeLeft<=0){
+        timeLeft=0; updateTimerUI();
+        fail();
+        return;
+      }
+      updateTimerUI();
+    },100);
+  }
+
+  function success(){
+    if(interval) clearInterval(interval); interval=null;
+    const used = (TIME_LIMIT-timeLeft).toFixed(1);
+    cfg.resultEl.textContent = `🎉 太棒了！用了 ${used} 秒就打完啦！`;
+    cfg.resultEl.className='result-msg ok';
+  }
+
+  function fail(){
+    if(interval) clearInterval(interval); interval=null;
+    cfg.resultEl.textContent = '⏰ 超时啦！内容已清空，再试一次吧！';
+    cfg.resultEl.className='result-msg fail';
+    setTimeout(()=> reset(cfg.regenerateOnFail), 1200);
+  }
+
+  function handleKey(e){
+    if(!cfg.isActive()) return;
+    const key = e.key;
+    if(key.length!==1 || !/[a-zA-Z]/.test(key)) return;
+    if(!started) startTimer();
+    const expected = sequence[idx];
+    const match = cfg.exactCase ? (key===expected) : (key.toLowerCase()===expected.toLowerCase());
+    if(match){
+      idx++;
+      paintCurrent();
+      if(idx>=sequence.length){ success(); }
+    } else {
+      const span = spans[idx];
+      if(span){
+        span.classList.add('shake');
+        setTimeout(()=>span.classList.remove('shake'),300);
+      }
+    }
+  }
+
+  return { handleKey, reset };
+}
+
+let activeTab = '1';
+
+const challenge2 = makeChallenge({
+  seqContainer: document.getElementById('seq2'),
+  timerBar: document.getElementById('timerBar2'),
+  timerNum: document.getElementById('timerNum2'),
+  resultEl: document.getElementById('result2'),
+  exactCase: false,
+  regenerateOnFail: false,
+  buildSequence: ()=> letters.map(l=>l),
+  isActive: ()=> activeTab==='2'
+});
+
+function randomCaseSequence(){
+  return letters.map(l => Math.random()<0.5 ? l.toUpperCase() : l);
+}
+
+const challenge3 = makeChallenge({
+  seqContainer: document.getElementById('seq3'),
+  timerBar: document.getElementById('timerBar3'),
+  timerNum: document.getElementById('timerNum3'),
+  resultEl: document.getElementById('result3'),
+  exactCase: true,
+  regenerateOnFail: true,
+  buildSequence: randomCaseSequence,
+  isActive: ()=> activeTab==='3'
+});
+
+document.getElementById('reset2Btn').onclick = ()=> challenge2.reset(false);
+document.getElementById('reset3Btn').onclick = ()=> challenge3.reset(true);
+
+document.addEventListener('keydown', (e)=>{
+  if(document.activeElement && document.activeElement.id==='typeInput4') return;
+  challenge2.handleKey(e);
+  challenge3.handleKey(e);
+});
+
+/* ============ PANEL 4: sentence practice ============ */
+const SENTENCES = [
+"The sun is shining today.",
+"I love to read new books.",
+"My best friend lives next door.",
+"We play soccer after school.",
+"The cat is sleeping on the sofa.",
+"She likes to draw funny pictures.",
+"My teacher is very kind.",
+"We eat lunch at noon.",
+"The dog ran across the yard.",
+"I have two brothers and one sister.",
+"Please close the door quietly.",
+"The bus comes at eight o'clock.",
+"We are learning to type fast.",
+"My favorite color is blue.",
+"He can ride a bicycle very well.",
+"The library is open until five.",
+"I brush my teeth every morning.",
+"We watched a movie last night.",
+"The flowers in the garden smell nice.",
+"My mom made pancakes for breakfast.",
+"I want to be a scientist someday.",
+"The stars come out at night.",
+"We visited the zoo last weekend.",
+"My backpack is full of books.",
+"The rain stopped after lunch.",
+"I can swim across the pool.",
+"Our class went on a field trip.",
+"The baby laughed at the puppy.",
+"I like pizza more than pasta.",
+"We built a sandcastle at the beach.",
+"My grandmother tells great stories.",
+"The clock on the wall is broken.",
+"I finished my homework early today.",
+"The birds sing every morning.",
+"We planted seeds in the garden.",
+"My shoes are new and white.",
+"The teacher wrote on the board.",
+"I like to play video games.",
+"We sang songs at the party.",
+"The moon looks bright tonight.",
+"My sister plays the piano well.",
+"I dropped my pencil on the floor.",
+"We rode our bikes to the park.",
+"The snow covered the whole street.",
+"I packed my lunch this morning.",
+"The puppy chased its own tail.",
+"We made a fort out of blankets.",
+"My favorite subject is math class.",
+"The wind blew the leaves away.",
+"I found a shiny coin outside.",
+"We had a picnic under the tree.",
+"The train arrived right on time.",
+"I wrote a letter to my friend.",
+"The kitten climbed up the tree.",
+"We cleaned our room together.",
+"My uncle works at a hospital.",
+"I like to jump rope at recess.",
+"The chef cooked a tasty dinner.",
+"We watched the fireworks light up.",
+"My computer needs a new battery.",
+"I feed my fish every day.",
+"The children played in the park.",
+"We painted the fence bright red.",
+"My father drives a big truck.",
+"I like to collect small rocks.",
+"The airplane flew above the clouds.",
+"We shared our snacks at lunch.",
+"My room has a big window.",
+"I practice typing every single day.",
+"The farmer grows corn and wheat.",
+"We laughed at the funny joke.",
+"My locker is next to the gym.",
+"I like reading stories about space.",
+"The waves crashed on the shore.",
+"We sang happy birthday to her.",
+"My grandpa fixes old wooden clocks.",
+"I tied my shoes all by myself.",
+"The classroom smells like fresh paint.",
+"We counted the stars at night.",
+"My neighbor has a friendly dog.",
+"I like drawing maps of places.",
+"The library has thousands of books.",
+"We played hide and seek outside.",
+"My sister is learning to skate.",
+"I keep my desk very neat.",
+"The rainbow appeared after the storm.",
+"We baked cookies with our mom.",
+"My friend moved to a new town.",
+"I like solving tricky puzzles.",
+"The school bell rang loudly.",
+"We took photos at the beach.",
+"My jacket keeps me warm outside.",
+"I enjoy learning new words.",
+"The garden is full of butterflies.",
+"We practiced our spelling words.",
+"My favorite season is the fall.",
+"I helped carry the heavy bags.",
+"The river flows through the valley.",
+"We finished the race together.",
+"Typing fast takes lots of practice."
+];
+
+let sentIdx = 0;
+let doneCount = 0;
+let totalKeys = 0;
+let correctKeys = 0;
+
+const sentenceBox4 = document.getElementById('sentenceBox4');
+const typeInput4 = document.getElementById('typeInput4');
+const progressBar4 = document.getElementById('progressBar4');
+const progressLabel4 = document.getElementById('progressLabel4');
+const statDone4 = document.getElementById('statDone4');
+const statAcc4 = document.getElementById('statAcc4');
+
+function renderSentence(){
+  const target = SENTENCES[sentIdx];
+  const typed = typeInput4.value;
+  sentenceBox4.innerHTML='';
+  target.split('').forEach((ch,i)=>{
+    const span = document.createElement('span');
+    span.textContent = ch;
+    if(i < typed.length){
+      span.classList.add(typed[i]===ch ? 'correct':'wrong');
+    } else {
+      span.classList.add('pending');
+    }
+    sentenceBox4.appendChild(span);
+  });
+  progressLabel4.textContent = `第 ${sentIdx+1} / ${SENTENCES.length} 句`;
+  progressBar4.style.width = ((sentIdx)/SENTENCES.length*100)+'%';
+  statDone4.textContent = doneCount;
+  const acc = totalKeys===0 ? 100 : Math.round(correctKeys/totalKeys*100);
+  statAcc4.textContent = acc+'%';
+}
+
+function loadSentence(i){
+  sentIdx = ((i%SENTENCES.length)+SENTENCES.length)%SENTENCES.length;
+  typeInput4.value='';
+  renderSentence();
+}
+loadSentence(0);
+
+typeInput4.addEventListener('input', ()=>{
+  const target = SENTENCES[sentIdx];
+  const typed = typeInput4.value;
+  const lastChar = typed[typed.length-1];
+  if(typed.length>0 && typed.length<=target.length){
+    totalKeys++;
+    if(lastChar===target[typed.length-1]) correctKeys++;
+  }
+  renderSentence();
+  if(typed===target){
+    doneCount++;
+    statDone4.textContent = doneCount;
+    setTimeout(()=>{ loadSentence(sentIdx+1); }, 500);
+  }
+});
+
+document.getElementById('prevSent4Btn').onclick = ()=> loadSentence(sentIdx-1);
+document.getElementById('skipSent4Btn').onclick = ()=> loadSentence(sentIdx+1);
+document.getElementById('restart4Btn').onclick = ()=>{
+  doneCount=0; totalKeys=0; correctKeys=0;
+  loadSentence(0);
+};
+
+/* ============ tab switching ============ */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const tab = btn.dataset.tab;
+    activeTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b===btn));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel'+tab).classList.add('active');
+    if(playTimer){ clearInterval(playTimer); playTimer=null; playBtn.textContent='▶ 自动播放'; }
+    if(tab==='4'){ setTimeout(()=>typeInput4.focus(), 50); }
+  });
+});
+</script>
+</body>
+</html>
